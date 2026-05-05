@@ -6,7 +6,8 @@ WhisperBox is a high-security, zero-knowledge messaging application. Designed wi
 Build a secure messaging application where data is encrypted on the client, the server never sees plaintext, and only authorized users can decrypt content.
 
 ## 🏗️ System Architecture
-<img width="1919" height="907" alt="WhisperBox Architecture" src="YOUR_IMAGE_LINK_HERE" />
+<img width="1919" height="907" alt="image" src="https://github.com/user-attachments/assets/79825de3-3ebc-4c16-b778-b238dd72134f" />
+
 
 ### Frontend Responsibilities
 - **Key Generation:** Local generation of RSA-2048 keypairs.
