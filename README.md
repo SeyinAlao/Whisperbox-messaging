@@ -57,5 +57,3 @@ WhisperBox implements a **Hybrid Encryption** scheme to balance security and per
 3. Set your environment variables: `VITE_API_BASE_URL=https://whisperbox.koyeb.app/`
 4. Start the development server: `npm run dev`
 
----
-*Developed for the Frontend Wizards Program — Stage 4B.*
