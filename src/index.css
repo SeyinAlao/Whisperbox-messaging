@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-whisper-bg text-gray-100 antialiased overflow-hidden;
+  
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-whisper-secondary rounded-full;
+}
