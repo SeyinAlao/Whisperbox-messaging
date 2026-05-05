@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react'; 
 import { useAuthStore } from '../store/useAuthStore';
 import { useChatStore } from '../store/useChatStore';
 import { api } from '../lib/api';
@@ -19,6 +20,15 @@ const SendIcon = () => (
   </svg>
 );
 
+const SmileIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+    <line x1="9" y1="9" x2="9.01" y2="9" />
+    <line x1="15" y1="9" x2="15.01" y2="9" />
+  </svg>
+);
+
 const TinyLockIcon = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
@@ -30,11 +40,16 @@ export default function MessageInput({ recipientId, recipientDisplayName }: Prop
   const { token, user, privateKey } = useAuthStore();
   const { addMessage, upsertConversation, wsConnected } = useChatStore();
   const { sendWsMessage } = useWebSocket();
-
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false); 
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const onEmojiClick = (emojiData: EmojiClickData) => {
+    setText((prev) => prev + emojiData.emoji);
+    textareaRef.current?.focus();
+  };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(e.target.value);
@@ -48,6 +63,7 @@ export default function MessageInput({ recipientId, recipientDisplayName }: Prop
     if (!trimmed || !token || !user || !privateKey) return;
 
     setSending(true);
+    setShowEmojiPicker(false); 
     setError(null);
 
     try {
@@ -99,18 +115,7 @@ export default function MessageInput({ recipientId, recipientDisplayName }: Prop
     } finally {
       setSending(false);
     }
-  }, [
-    text,
-    token,
-    user,
-    privateKey,
-    recipientId,
-    wsConnected,
-    addMessage,
-    upsertConversation,
-    recipientDisplayName,
-    sendWsMessage,
-  ]);
+  }, [text, token, user, privateKey, recipientId, wsConnected, addMessage, upsertConversation, recipientDisplayName, sendWsMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -120,14 +125,35 @@ export default function MessageInput({ recipientId, recipientDisplayName }: Prop
   };
 
   return (
-    <div className="p-4 bg-[#12121a] border-t border-gray-800/50 shrink-0 w-full z-10">
+    <div className="p-4 bg-[#12121a] border-t border-gray-800/50 shrink-0 w-full z-10 relative">
       {error && (
         <div className="mb-3 p-2.5 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg">
           {error}
         </div>
       )}
 
-      <div className="flex items-end gap-2.5 max-w-4xl mx-auto">
+      {showEmojiPicker && (
+        <div className="absolute bottom-20 left-4 z-50">
+          <EmojiPicker 
+            onEmojiClick={onEmojiClick} 
+            theme={Theme.DARK} 
+            autoFocusSearch={false}
+          />
+        </div>
+      )}
+
+      <div className="flex items-end gap-2.5 max-w-4xl mx-auto relative">
+        <button
+          type="button"
+          onClick={() => setShowEmojiPicker((v) => !v)}
+          className={`p-3 rounded-xl transition-colors shrink-0 h-[46px] w-[46px] flex items-center justify-center ${
+            showEmojiPicker ? 'text-indigo-400 bg-indigo-500/10' : 'text-gray-500 hover:text-gray-300 bg-[#1a1a24]'
+          }`}
+          aria-label="Add emoji"
+        >
+          <SmileIcon />
+        </button>
+
         <textarea
           ref={textareaRef}
           className="flex-1 bg-[#1a1a24] text-white placeholder-gray-500 border border-gray-700/50 rounded-2xl px-4 py-3 min-h-[46px] max-h-[120px] resize-none focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-[15px] leading-relaxed transition-colors scrollbar-thin scrollbar-thumb-gray-700"
@@ -138,6 +164,7 @@ export default function MessageInput({ recipientId, recipientDisplayName }: Prop
           onKeyDown={handleKeyDown}
           disabled={sending}
         />
+
         <button
           className="p-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 h-[46px] w-[46px]"
           onClick={handleSend}
